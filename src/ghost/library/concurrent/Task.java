@@ -3,7 +3,9 @@ package ghost.library.concurrent;
 import ghost.library.utility.IObserverTarget;
 import ghost.library.utility.ObserverTargetImpl;
 
-public class Task implements Runnable, IObserverTarget {
+public class Task implements IObserverTarget {
+	
+	public static final long KEEP_ALIVE_TIME_MILLIS = 10 * 1000;
 	
 	public static interface IObserver extends ghost.library.utility.IObserver {
 		public void onStateChanged(Task task, State oldState, State newState);
@@ -75,6 +77,7 @@ public class Task implements Runnable, IObserverTarget {
 	
 	private boolean canceled_ = false;
 	private boolean aborted_ = false;
+	private long lastKeepAliveTime_;
 	
 	private ObserverTargetImpl observerTargetImpl_;
 
@@ -122,7 +125,12 @@ public class Task implements Runnable, IObserverTarget {
 	}
 	public synchronized boolean execute()
 	{
-		return setState(State.EXECUTING);
+		if (setState(State.EXECUTING))
+		{
+			lastKeepAliveTime_ = System.currentTimeMillis();
+			return true;
+		}
+		return false;
 	}
 	
 	public synchronized boolean isFinished()
@@ -162,6 +170,25 @@ public class Task implements Runnable, IObserverTarget {
 		return false;
 	}
 	
+	public long getKeepAliveTimeMillis()
+	{
+		return KEEP_ALIVE_TIME_MILLIS;
+	}
+	public synchronized boolean isAlive()
+	{
+		switch (state_)
+		{
+		case EXECUTING:
+			return (System.currentTimeMillis()-lastKeepAliveTime_) < getKeepAliveTimeMillis();
+		default:
+			return true;
+		}
+	}
+	public synchronized void keepAlive()
+	{
+		lastKeepAliveTime_ = System.currentTimeMillis();
+	}
+	
 	public synchronized boolean reset()
 	{
 		if (State.NONE == state_)
@@ -178,14 +205,7 @@ public class Task implements Runnable, IObserverTarget {
 	}
 
 	@Override
-	public void run()
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void addObserver(ghost.library.utility.IObserver observer)
+	public synchronized void addObserver(ghost.library.utility.IObserver observer)
 	{
 		// TODO Auto-generated method stub
 		if (null == observerTargetImpl_)
@@ -196,7 +216,7 @@ public class Task implements Runnable, IObserverTarget {
 	}
 
 	@Override
-	public void removeObserver(ghost.library.utility.IObserver observer)
+	public synchronized void removeObserver(ghost.library.utility.IObserver observer)
 	{
 		// TODO Auto-generated method stub
 		if (null != observerTargetImpl_)
@@ -206,7 +226,7 @@ public class Task implements Runnable, IObserverTarget {
 	}
 
 	@Override
-	public void clearObserver()
+	public synchronized void clearObserver()
 	{
 		// TODO Auto-generated method stub
 		if (null != observerTargetImpl_)
@@ -220,9 +240,25 @@ public class Task implements Runnable, IObserverTarget {
 			NotifyMethodParam... parameters)
 	{
 		// TODO Auto-generated method stub
-		if (null != observerTargetImpl_)
+		ObserverTargetImpl observerTargetImpl = null;
+		synchronized (this)
 		{
-			observerTargetImpl_.notifyObservers(methodName, parameters);
+			if (null != observerTargetImpl_)
+			{
+				observerTargetImpl_.beginSafeNotify();
+				observerTargetImpl = observerTargetImpl_;
+			}
+		}
+		if (null != observerTargetImpl)
+		{
+			observerTargetImpl.safeNotify(methodName, parameters);
+		}
+		synchronized (this)
+		{
+			if (null != observerTargetImpl_ && observerTargetImpl == observerTargetImpl_)
+			{
+				observerTargetImpl_.endSafeNotify();
+			}
 		}
 	}
 
