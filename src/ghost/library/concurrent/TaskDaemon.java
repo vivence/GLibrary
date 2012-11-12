@@ -48,6 +48,23 @@ public abstract class TaskDaemon implements Task.IObserver {
 		}
 	}
 	
+	public final void abortAllTasks()
+	{
+		Set<Task> tasks = null;
+		synchronized (this)
+		{
+			tasks = tasks_;
+		}
+		if (null != tasks)
+		{
+			for (Task task : tasks)
+			{
+				task.abort();
+			}
+		}
+		stopWork();
+	}
+	
 	public final void checkTasks()
 	{
 		Set<Task> tasks = null;
