@@ -24,6 +24,7 @@ public class Task implements IObserverTarget {
 				switch (nextState)
 				{
 				case AWAITING:
+				case EXECUTING:
 					return true;
 				default:
 					return false;
