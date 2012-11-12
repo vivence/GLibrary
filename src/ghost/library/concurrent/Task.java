@@ -11,6 +11,10 @@ public class Task implements IObserverTarget {
 		public void onStateChanged(Task task, State oldState, State newState);
 	}
 	
+	public static interface Context{
+		public void interrupt();
+	}
+	
 	public static enum State {
 		NONE{
 			@Override
@@ -74,6 +78,7 @@ public class Task implements IObserverTarget {
 	}
 	
 	private State state_ = State.NONE;
+	private Context context_;
 	
 	private boolean canceled_ = false;
 	private boolean aborted_ = false;
@@ -90,7 +95,7 @@ public class Task implements IObserverTarget {
 	{
 		return state_;
 	}
-	public synchronized boolean setState(State state)
+	public synchronized boolean setState(State state, Context context)
 	{
 		if (state_ == state)
 		{
@@ -100,6 +105,7 @@ public class Task implements IObserverTarget {
 		{
 			State oldState = state_;
 			state_ = state;
+			context_ = context;
 			notifyObservers(
 					"onStateChanged", 
 					new NotifyMethodParam(Task.class, this), 
@@ -114,18 +120,18 @@ public class Task implements IObserverTarget {
 	{
 		return State.AWAITING == getState();
 	}
-	public synchronized boolean await()
+	public synchronized boolean await(Context context)
 	{
-		return setState(State.AWAITING);
+		return setState(State.AWAITING, context);
 	}
 	
 	public synchronized boolean isExecuting()
 	{
 		return State.EXECUTING == getState();
 	}
-	public synchronized boolean execute()
+	public synchronized boolean execute(Context context)
 	{
-		if (setState(State.EXECUTING))
+		if (setState(State.EXECUTING, context))
 		{
 			lastKeepAliveTime_ = System.currentTimeMillis();
 			return true;
@@ -139,7 +145,7 @@ public class Task implements IObserverTarget {
 	}
 	public synchronized boolean finish()
 	{
-		return setState(State.FINISHED);
+		return setState(State.FINISHED, null);
 	}
 	
 	public synchronized boolean isCanceled()
@@ -148,7 +154,7 @@ public class Task implements IObserverTarget {
 	}
 	public synchronized boolean cancel()
 	{
-		if (setState(State.FINISHED))
+		if (setState(State.FINISHED, null))
 		{
 			canceled_ = true;
 			return true;
@@ -162,9 +168,14 @@ public class Task implements IObserverTarget {
 	}
 	public synchronized boolean abort()
 	{
-		if (setState(State.FINISHED))
+		Context context = context_;
+		if (setState(State.FINISHED, null))
 		{
 			aborted_ = true;
+			if (null != context)
+			{
+				context.interrupt();
+			}
 			return true;
 		}
 		return false;
@@ -195,7 +206,7 @@ public class Task implements IObserverTarget {
 		{
 			return true;
 		}
-		if (setState(State.NONE))
+		if (setState(State.NONE, null))
 		{
 			canceled_ = false;
 			aborted_ = false;
