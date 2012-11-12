@@ -263,7 +263,7 @@ public class Task implements IObserverTarget {
 		}
 		if (null != observerTargetImpl)
 		{
-			observerTargetImpl.safeNotify(methodName, parameters);
+			observerTargetImpl.safeNotify(IObserver.class, methodName, parameters);
 		}
 		synchronized (this)
 		{

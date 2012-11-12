@@ -33,12 +33,12 @@ public class ObserverTargetImpl implements IObserverTarget {
 		tempObservers_ = null;
 	}
 	
-	public void safeNotify(String methodName, NotifyMethodParam... parameters)
+	public void safeNotify(Class<? extends IObserver> observerInterface, String methodName, NotifyMethodParam... parameters)
 	{
-		notifyObservers(tempObservers_, methodName, parameters);
+		notifyObservers(observerInterface, tempObservers_, methodName, parameters);
 	}
 	
-	public static void notifyObservers(Set<IObserver> observers, String methodName, NotifyMethodParam... parameters)
+	public static void notifyObservers(Class<? extends IObserver> observerInterface, Set<IObserver> observers, String methodName, NotifyMethodParam... parameters)
 	{
 		if (null != observers)
 		{
@@ -49,7 +49,7 @@ public class ObserverTargetImpl implements IObserverTarget {
 				{
 					paramClasses[i] = parameters[i].paramClass;
 				}
-				Method method = IObserver.class.getMethod(methodName, paramClasses);
+				Method method = observerInterface.getMethod(methodName, paramClasses);
 				Object[] params = new Object[parameters.length];
 				for (int i = 0; i < params.length; ++i)
 				{
@@ -139,7 +139,12 @@ public class ObserverTargetImpl implements IObserverTarget {
 	public void notifyObservers(String methodName, NotifyMethodParam... parameters)
 	{
 		// TODO Auto-generated method stub
-		notifyObservers(observers_, methodName, parameters);
+		notifyObservers(IObserver.class, observers_, methodName, parameters);
+	}
+	
+	public void notifyObservers(Class<? extends IObserver> observerInterface, String methodName, NotifyMethodParam... parameters)
+	{
+		notifyObservers(observerInterface, observers_, methodName, parameters);
 	}
 
 }
