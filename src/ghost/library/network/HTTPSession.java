@@ -17,7 +17,6 @@ import junit.framework.Assert;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -111,15 +110,52 @@ public class HTTPSession {
 				}
 			}
 			HttpResponse response = httpClient_.execute(request_);
-			switch (response.getStatusLine().getStatusCode())
+			if (null != response)
 			{
-			case HttpStatus.SC_OK:
-			case HttpStatus.SC_PARTIAL_CONTENT:
-				break;
-			default:
-				Log.e(LOG_TAG, "http-get failed: "+response.getStatusLine().getStatusCode());
-				response = null;
-				break;
+				Log.e(LOG_TAG, "http-get response: "+response.getStatusLine().getStatusCode());
+			}
+			return response;
+		} 
+		catch (IllegalArgumentException e) 
+		{
+			// TODO: handle exception
+			e.printStackTrace();
+		} 
+		catch (ClientProtocolException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (UnsupportedEncodingException e)
+		{
+			e.printStackTrace();
+		}
+		catch (IOException e) 
+		{
+			// TODO: handle exception
+		}
+		return null;
+	}
+	
+	public HttpResponse post(String urlString, List<Header> headers)
+	{
+		Assert.assertTrue(!TextUtils.isEmpty(urlString));
+		Log.i(LOG_TAG, "http-post: "+urlString);
+		try 
+		{
+//			urlString = URLEncoder.encode(urlString, StringUtils.CHAR_SET_UTF_8);
+			request_ = new HttpPost(urlString);
+			if (null != headers) 
+			{
+				for (Header header : headers) 
+				{
+					request_.addHeader(header);
+				}
+			}
+			HttpResponse response = httpClient_.execute(request_);
+			if (null != response)
+			{
+				Log.e(LOG_TAG, "http-post response: "+response.getStatusLine().getStatusCode());
 			}
 			return response;
 		} 

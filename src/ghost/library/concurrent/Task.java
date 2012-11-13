@@ -9,6 +9,7 @@ public class Task implements IObserverTarget {
 	
 	public static interface IObserver extends ghost.library.utility.IObserver {
 		public void onStateChanged(Task task, State oldState, State newState);
+		public void onProgress(Task task, int current, int max);
 	}
 	
 	public static interface Context{
@@ -112,6 +113,20 @@ public class Task implements IObserverTarget {
 					new NotifyMethodParam(Task.class, this), 
 					new NotifyMethodParam(State.class, oldState), 
 					new NotifyMethodParam(State.class, state_));
+			return true;
+		}
+		return false;
+	}
+	
+	public synchronized boolean setProgress(int current, int max)
+	{
+		if (State.EXECUTING == getState())
+		{
+			notifyObservers(
+				"onProgress", 
+				new NotifyMethodParam(Task.class, this), 
+				new NotifyMethodParam(int.class, current), 
+				new NotifyMethodParam(int.class, max));
 			return true;
 		}
 		return false;

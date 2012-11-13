@@ -77,6 +77,13 @@ public class TaskDaemonFactory {
 				}
 			}
 		}
+
+		@Override
+		public void onProgress(Task task, int current, int max)
+		{
+			// TODO Auto-generated method stub
+			
+		}
 		
 	}
 
