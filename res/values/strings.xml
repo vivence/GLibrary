@@ -1,3 +1,24 @@
 <resources>
     <string name="app_name">Ghost库</string>
+    <string name="year">年</string>
+    <string name="month">月</string>
+    <string name="months">个月</string>
+    <string name="day">天</string>
+    <string name="hour">小时</string>
+    <string name="hours">个小时</string>
+    <string name="minute">分钟</string>
+    <string name="second">秒</string>
+    <string name="yesterday">昨天</string>
+    <string name="week">星期</string>
+    <string name="last_week">上周</string>
+    
+    <string name="f_html_font_color">color=\"#%1$06x\"</string>
+    <string name="f_hour_minute_early_in_the_morning">h:mm 凌晨</string>
+    <string name="f_hour_minute_in_the_morning">h:mm 上午</string>
+    <string name="f_hour_minute_in_the_afternoon">h:mm 下午</string>
+    <string name="f_hour_minute_in_the_night">h:mm 晚上</string>
+    <string name="f_hour_minute_in_day">H:mm</string>
+    <string name="f_year_month_date">yyyy年M月d日</string>
+    <string name="f_month_date">M月d日</string> 
+	<string name="f_hour_minute">H点mm分</string>
 </resources>

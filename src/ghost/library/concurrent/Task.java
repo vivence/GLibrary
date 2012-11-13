@@ -117,11 +117,16 @@ public class Task implements IObserverTarget {
 		return false;
 	}
 	
+	public synchronized Context getContext()
+	{
+		return context_;
+	}
+	
 	public synchronized boolean isAwaiting()
 	{
 		return State.AWAITING == getState();
 	}
-	public synchronized boolean await(Context context)
+	public final synchronized boolean await(Context context)
 	{
 		return setState(State.AWAITING, context);
 	}
@@ -130,7 +135,7 @@ public class Task implements IObserverTarget {
 	{
 		return State.EXECUTING == getState();
 	}
-	public synchronized boolean execute(Context context)
+	public final synchronized boolean execute(Context context)
 	{
 		if (setState(State.EXECUTING, context))
 		{
