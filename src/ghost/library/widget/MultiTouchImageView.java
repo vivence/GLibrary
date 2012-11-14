@@ -94,6 +94,8 @@ public class MultiTouchImageView
 	
 	public void reset(Bitmap bmp)
 	{
+		// stop animation
+		// stop fling
 		bmp_ = bmp;
 		if (null != bmp_)
 		{
@@ -332,7 +334,7 @@ public class MultiTouchImageView
 	public boolean onScaleBegin(ScaleGestureDetector detector)
 	{
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override

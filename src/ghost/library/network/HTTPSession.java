@@ -100,6 +100,10 @@ public class HTTPSession {
 		Log.i(LOG_TAG, "http-get: "+urlString);
 		try 
 		{
+			if (null != request_)
+			{
+				request_.abort();
+			}
 //			urlString = URLEncoder.encode(urlString, StringUtils.CHAR_SET_UTF_8);
 			request_ = new HttpGet(urlString);
 			if (null != headers) 
@@ -143,6 +147,10 @@ public class HTTPSession {
 		Log.i(LOG_TAG, "http-post: "+urlString);
 		try 
 		{
+			if (null != request_)
+			{
+				request_.abort();
+			}
 //			urlString = URLEncoder.encode(urlString, StringUtils.CHAR_SET_UTF_8);
 			request_ = new HttpPost(urlString);
 			if (null != headers) 
@@ -210,6 +218,10 @@ public class HTTPSession {
 		headers.add(new BasicHeader("Content-Type", CONTENT_TYPE));
 		try 
 		{
+			if (null != connection_)
+			{
+				connection_.disconnect();
+			}
 //			urlString = URLEncoder.encode(urlString, StringUtils.CHAR_SET_UTF_8);
 			URL url = new URL(urlString);
 			connection_ = (HttpURLConnection)url.openConnection();
