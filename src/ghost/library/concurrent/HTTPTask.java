@@ -22,6 +22,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
 import org.apache.http.ParseException;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
@@ -63,11 +64,61 @@ public final class HTTPTask extends Task implements Runnable {
 		}
 		
 		public static enum Method{
-			GET_STRING,
-			GET_BYTES,
-			GET_PROGRESS_BYTES,
+			GET_STRING{
+				@Override
+				public HttpResponse fetch(HTTPSession session, Request request)
+				{
+					// TODO Auto-generated method stub
+					return session.get(request.getURLString(), request.getHeaders());
+				}
+			},
+			GET_BYTES{
+				@Override
+				public HttpResponse fetch(HTTPSession session, Request request)
+				{
+					// TODO Auto-generated method stub
+					return session.get(request.getURLString(), request.getHeaders());
+				}
+			},
+			GET_PROGRESS_BYTES{
+				@Override
+				public HttpResponse fetch(HTTPSession session, Request request)
+				{
+					// TODO Auto-generated method stub
+					return session.get(request.getURLString(), request.getHeaders());
+				}
+			},
+			POST_STRING{
+				@Override
+				public HttpResponse fetch(HTTPSession session, Request request)
+				{
+					// TODO Auto-generated method stub
+					return session.post(request.getURLString(), request.getHeaders(), request.getEntityParams());
+				}
+			},
+			POST_BYTES{
+				@Override
+				public HttpResponse fetch(HTTPSession session, Request request)
+				{
+					// TODO Auto-generated method stub
+					return session.post(request.getURLString(), request.getHeaders(), request.getEntityParams());
+				}
+			},
+			POST_PROGRESS_BYTES{
+				@Override
+				public HttpResponse fetch(HTTPSession session, Request request)
+				{
+					// TODO Auto-generated method stub
+					return session.post(request.getURLString(), request.getHeaders(), request.getEntityParams());
+				}
+			},
 			UPLOAD,
-			DOWNLOAD
+			DOWNLOAD;
+			
+			public HttpResponse fetch(HTTPSession session, Request request)
+			{
+				return null;
+			}
 		}
 		
 		private Range range_;
@@ -144,6 +195,10 @@ public final class HTTPTask extends Task implements Runnable {
 		
 		public abstract String getHost();
 		public List<Header> getURLParams()
+		{
+			return null;
+		}
+		public List<NameValuePair> getEntityParams()
 		{
 			return null;
 		}
@@ -275,7 +330,7 @@ public final class HTTPTask extends Task implements Runnable {
 		return httpSession;
 	}
 	
-	private void getString(HTTPSession session) throws InterruptedException
+	private void fetchString(HTTPSession session, Request.Method method) throws InterruptedException
 	{
 		String cachePath = request_.getFilePath();
 		if (TextUtils.isEmpty(cachePath))
@@ -301,7 +356,7 @@ public final class HTTPTask extends Task implements Runnable {
 			}
 			new File(cachePath).delete();
 		}
-		HttpResponse response = session.get(request_.getURLString(), request_.getHeaders());
+		HttpResponse response = method.fetch(session, request_);
 		if (null == response)
 		{
 			result_ = new Result(Result.Error.NETWORK, 0);
@@ -351,7 +406,7 @@ public final class HTTPTask extends Task implements Runnable {
 		}
 	}
 	
-	private void getBytes(HTTPSession session) throws InterruptedException
+	private void fetchBytes(HTTPSession session, Request.Method method) throws InterruptedException
 	{
 		String cachePath = request_.getFilePath();
 		if (TextUtils.isEmpty(cachePath))
@@ -370,7 +425,7 @@ public final class HTTPTask extends Task implements Runnable {
 				new File(cachePath).delete();
 			}
 		}
-		HttpResponse response = session.get(request_.getURLString(), request_.getHeaders());
+		HttpResponse response = method.fetch(session, request_);
 		if (null == response)
 		{
 			result_ = new Result(Result.Error.NETWORK, 0);
@@ -415,7 +470,7 @@ public final class HTTPTask extends Task implements Runnable {
 		}
 	}
 	
-	private void getProgressBytes(HTTPSession session) throws InterruptedException
+	private void fetchProgressBytes(HTTPSession session, Request.Method method) throws InterruptedException
 	{
 		String cachePath = request_.getFilePath();
 		if (TextUtils.isEmpty(cachePath))
@@ -435,7 +490,7 @@ public final class HTTPTask extends Task implements Runnable {
 			}
 		}
 		setProgress(0, -1);
-		HttpResponse response = session.get(request_.getURLString(), request_.getHeaders());
+		HttpResponse response = method.fetch(session, request_);
 		if (null == response)
 		{
 			result_ = new Result(Result.Error.NETWORK, 0);
@@ -803,13 +858,16 @@ public final class HTTPTask extends Task implements Runnable {
 				switch (request_.getMethod())
 				{
 				case GET_STRING:
-					getString(httpSession);
+				case POST_STRING:
+					fetchString(httpSession, request_.getMethod());
 					break;
 				case GET_BYTES:
-					getBytes(httpSession);
+				case POST_BYTES:
+					fetchBytes(httpSession, request_.getMethod());
 					break;
 				case GET_PROGRESS_BYTES:
-					getProgressBytes(httpSession);
+				case POST_PROGRESS_BYTES:
+					fetchProgressBytes(httpSession, request_.getMethod());
 					break;
 				case UPLOAD:
 					upload(httpSession);

@@ -17,8 +17,10 @@ import junit.framework.Assert;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -141,7 +143,7 @@ public class HTTPSession {
 		return null;
 	}
 	
-	public HttpResponse post(String urlString, List<Header> headers)
+	public HttpResponse post(String urlString, List<Header> headers, List<NameValuePair> params)
 	{
 		Assert.assertTrue(!TextUtils.isEmpty(urlString));
 		Log.i(LOG_TAG, "http-post: "+urlString);
@@ -159,6 +161,10 @@ public class HTTPSession {
 				{
 					request_.addHeader(header);
 				}
+			}
+			if (null != params && !params.isEmpty())
+			{
+				((HttpPost)request_).setEntity(new UrlEncodedFormEntity(params, StringUtils.CHAR_SET_UTF_8));
 			}
 			HttpResponse response = httpClient_.execute(request_);
 			if (null != response)
