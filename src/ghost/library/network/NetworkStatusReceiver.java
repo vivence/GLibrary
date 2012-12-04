@@ -94,6 +94,7 @@ public class NetworkStatusReceiver extends BroadcastReceiver implements IObserve
 			{
 				Log.d(LOG_TAG, "network status changed on thread("+Thread.currentThread().getName()+") mobile: "+(isMobileConnected() ? "on" : "off")+"\t wifi: "+(isWifiConnected() ? "on" : "off"));
 				notifyObservers(
+						IObserver.class,
 						"onStatusChanged", 
 						new NotifyMethodParam(StatusChange.class, mobileChange),
 						new NotifyMethodParam(StatusChange.class, wifieChange));
@@ -138,13 +139,15 @@ public class NetworkStatusReceiver extends BroadcastReceiver implements IObserve
 	}
 	
 	@Override
-	public void notifyObservers(String methodName,
+	public void notifyObservers(
+			Class<? extends ghost.library.utility.IObserver> observerInterface, 
+			String methodName,
 			NotifyMethodParam... parameters)
 	{
 		// TODO Auto-generated method stub
 		if (null != observerTargetImpl_)
 		{
-			observerTargetImpl_.notifyObservers(methodName, parameters);
+			observerTargetImpl_.notifyObservers(observerInterface, methodName, parameters);
 		}
 	}
 

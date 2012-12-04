@@ -109,6 +109,7 @@ public class Task implements IObserverTarget {
 			state_ = state;
 			context_ = context;
 			notifyObservers(
+					IObserver.class,
 					"onStateChanged", 
 					new NotifyMethodParam(Task.class, this), 
 					new NotifyMethodParam(State.class, oldState), 
@@ -123,6 +124,7 @@ public class Task implements IObserverTarget {
 		if (State.EXECUTING == getState())
 		{
 			notifyObservers(
+				IObserver.class,
 				"onProgress", 
 				new NotifyMethodParam(Task.class, this), 
 				new NotifyMethodParam(int.class, current), 
@@ -268,7 +270,9 @@ public class Task implements IObserverTarget {
 	}
 	
 	@Override
-	public void notifyObservers(String methodName,
+	public void notifyObservers(
+			Class<? extends ghost.library.utility.IObserver> observerInterface, 
+			String methodName,
 			NotifyMethodParam... parameters)
 	{
 		// TODO Auto-generated method stub
@@ -283,7 +287,7 @@ public class Task implements IObserverTarget {
 		}
 		if (null != observerTargetImpl)
 		{
-			observerTargetImpl.safeNotify(IObserver.class, methodName, parameters);
+			observerTargetImpl.safeNotify(observerInterface, methodName, parameters);
 		}
 		synchronized (this)
 		{

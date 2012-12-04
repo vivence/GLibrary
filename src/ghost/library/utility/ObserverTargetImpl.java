@@ -134,13 +134,6 @@ public class ObserverTargetImpl implements IObserverTarget {
 			}
 		}
 	}
-
-	@Override
-	public void notifyObservers(String methodName, NotifyMethodParam... parameters)
-	{
-		// TODO Auto-generated method stub
-		notifyObservers(IObserver.class, observers_, methodName, parameters);
-	}
 	
 	public void notifyObservers(Class<? extends IObserver> observerInterface, String methodName, NotifyMethodParam... parameters)
 	{
