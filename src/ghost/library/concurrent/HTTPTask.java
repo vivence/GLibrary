@@ -264,7 +264,7 @@ public final class HTTPTask extends Task implements Runnable {
 		
 	}
 	
-	public static class Result{
+	public static class ErrorResult{
 		public static enum Error{
 			NETWORK,
 			HTTP,
@@ -275,7 +275,7 @@ public final class HTTPTask extends Task implements Runnable {
 		public final Error error;
 		public final int code;
 		
-		public Result(Error error, int code)
+		public ErrorResult(Error error, int code)
 		{
 			// TODO Auto-generated constructor stub
 			this.error = error;
@@ -286,7 +286,7 @@ public final class HTTPTask extends Task implements Runnable {
 	public static final ThreadLocal<HTTPSession> TLS_HTTP_SESSION = new ThreadLocal<HTTPSession>();
 	
 	private Request request_;
-	private Result result_;
+	private ErrorResult result_;
 	
 	public HTTPTask(Request request)
 	{
@@ -314,7 +314,7 @@ public final class HTTPTask extends Task implements Runnable {
 		return false;
 	}
 	
-	public Result getResult()
+	public ErrorResult getErrorResult()
 	{
 		return result_;
 	}
@@ -359,7 +359,7 @@ public final class HTTPTask extends Task implements Runnable {
 		HttpResponse response = method.fetch(session, request_);
 		if (null == response)
 		{
-			result_ = new Result(Result.Error.NETWORK, 0);
+			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
 			return;
 		}
 		else
@@ -370,14 +370,14 @@ public final class HTTPTask extends Task implements Runnable {
 			case HttpStatus.SC_OK:
 				break;
 			default:
-				result_ = new Result(Result.Error.HTTP, statusCode);
+				result_ = new ErrorResult(ErrorResult.Error.HTTP, statusCode);
 				return;
 			}
 		}
 		HttpEntity entity = response.getEntity();
 		if (null == entity)
 		{
-			result_ = new Result(Result.Error.NO_ENTITY, 0);
+			result_ = new ErrorResult(ErrorResult.Error.NO_ENTITY, 0);
 			return;
 		}
 		try
@@ -385,7 +385,7 @@ public final class HTTPTask extends Task implements Runnable {
 			String object = EntityUtils.toString(entity, StringUtils.CHAR_SET_UTF_8);
 			if (TextUtils.isEmpty(object))
 			{
-				result_ = new Result(Result.Error.NO_ENTITY, 0);
+				result_ = new ErrorResult(ErrorResult.Error.NO_ENTITY, 0);
 				return;
 			}
 			if (!TextUtils.isEmpty(cachePath))
@@ -397,12 +397,12 @@ public final class HTTPTask extends Task implements Runnable {
 		catch (ParseException e)
 		{
 			// TODO Auto-generated catch block
-			result_ = new Result(Result.Error.PARSE, 0);
+			result_ = new ErrorResult(ErrorResult.Error.PARSE, 0);
 		}
 		catch (IOException e)
 		{
 			// TODO Auto-generated catch block
-			result_ = new Result(Result.Error.NETWORK, 0);
+			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
 		}
 	}
 	
@@ -428,7 +428,7 @@ public final class HTTPTask extends Task implements Runnable {
 		HttpResponse response = method.fetch(session, request_);
 		if (null == response)
 		{
-			result_ = new Result(Result.Error.NETWORK, 0);
+			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
 			return;
 		}
 		else
@@ -439,14 +439,14 @@ public final class HTTPTask extends Task implements Runnable {
 			case HttpStatus.SC_OK:
 				break;
 			default:
-				result_ = new Result(Result.Error.HTTP, statusCode);
+				result_ = new ErrorResult(ErrorResult.Error.HTTP, statusCode);
 				return;
 			}
 		}
 		HttpEntity entity = response.getEntity();
 		if (null == entity)
 		{
-			result_ = new Result(Result.Error.NO_ENTITY, 0);
+			result_ = new ErrorResult(ErrorResult.Error.NO_ENTITY, 0);
 			return;
 		}
 		try
@@ -454,7 +454,7 @@ public final class HTTPTask extends Task implements Runnable {
 			byte[] bytes = EntityUtils.toByteArray(entity);
 			if (null == bytes)
 			{
-				result_ = new Result(Result.Error.NO_ENTITY, 0);
+				result_ = new ErrorResult(ErrorResult.Error.NO_ENTITY, 0);
 				return;
 			}
 			if (!TextUtils.isEmpty(cachePath))
@@ -466,7 +466,7 @@ public final class HTTPTask extends Task implements Runnable {
 		catch (IOException e)
 		{
 			// TODO Auto-generated catch block
-			result_ = new Result(Result.Error.NETWORK, 0);
+			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
 		}
 	}
 	
@@ -493,7 +493,7 @@ public final class HTTPTask extends Task implements Runnable {
 		HttpResponse response = method.fetch(session, request_);
 		if (null == response)
 		{
-			result_ = new Result(Result.Error.NETWORK, 0);
+			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
 			return;
 		}
 		else
@@ -504,14 +504,14 @@ public final class HTTPTask extends Task implements Runnable {
 			case HttpStatus.SC_OK:
 				break;
 			default:
-				result_ = new Result(Result.Error.HTTP, statusCode);
+				result_ = new ErrorResult(ErrorResult.Error.HTTP, statusCode);
 				return;
 			}
 		}
 		HttpEntity entity = response.getEntity();
 		if (null == entity)
 		{
-			result_ = new Result(Result.Error.NO_ENTITY, 0);
+			result_ = new ErrorResult(ErrorResult.Error.NO_ENTITY, 0);
 			return;
 		}
 		try
@@ -560,7 +560,7 @@ public final class HTTPTask extends Task implements Runnable {
 					}
 					if (-1 == readLen)
 					{
-						result_ = new Result(Result.Error.OTHER, 0);
+						result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
 						return;
 					}
 					offset += readLen;
@@ -577,12 +577,12 @@ public final class HTTPTask extends Task implements Runnable {
 		catch (IllegalStateException e)
 		{
 			// TODO Auto-generated catch block
-			result_ = new Result(Result.Error.OTHER, 0);
+			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
 		}
 		catch (IOException e)
 		{
 			// TODO Auto-generated catch block
-			result_ = new Result(Result.Error.NETWORK, 0);
+			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
 		}
 	}
 	
@@ -591,19 +591,19 @@ public final class HTTPTask extends Task implements Runnable {
 		String filePath = request_.getFilePath();
 		if (TextUtils.isEmpty(filePath))
 		{
-			result_ = new Result(Result.Error.OTHER, 0);
+			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
 			return;
 		}
 		File file = new File(filePath);
 		if (!file.exists())
 		{
-			result_ = new Result(Result.Error.OTHER, 0);
+			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
 			return;
 		}
 		int contentLen = (int)file.length();
 		if (0 >= contentLen)
 		{
-			result_ = new Result(Result.Error.OTHER, 0);
+			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
 			return;
 		}
 		setProgress(0, contentLen);
@@ -614,7 +614,7 @@ public final class HTTPTask extends Task implements Runnable {
 				file);
 		if (null == outputStream)
 		{
-			result_ = new Result(Result.Error.NETWORK, 0);
+			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
 			return;
 		}
 		FileInputStream fileInputStream = null;
@@ -634,7 +634,7 @@ public final class HTTPTask extends Task implements Runnable {
 				}
 				if (-1 == readLen)
 				{
-					result_ = new Result(Result.Error.OTHER, 0);
+					result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
 					return;
 				}
 				outputStream.write(buffer, 0, readLen);
@@ -658,16 +658,16 @@ public final class HTTPTask extends Task implements Runnable {
 		catch (IllegalStateException e)
 		{
 			// TODO: handle exception
-			result_ = new Result(Result.Error.OTHER, 0);
+			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
 		}
 		catch (FileNotFoundException e)
 		{
-			result_ = new Result(Result.Error.OTHER, 0);
+			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
 		}
 		catch (IOException e) 
 		{
 			// TODO: handle exception
-			result_ = new Result(Result.Error.NETWORK, 0);
+			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
 		}
 		finally
 		{
@@ -705,7 +705,7 @@ public final class HTTPTask extends Task implements Runnable {
 		String cachePath = request_.getFilePath();
 		if (TextUtils.isEmpty(cachePath))
 		{
-			result_ = new Result(Result.Error.OTHER, 0);
+			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
 			return;
 		}
 		File cacheFile = new File(cachePath);
@@ -742,7 +742,7 @@ public final class HTTPTask extends Task implements Runnable {
 		HttpResponse response = session.get(request_.getURLString(), request_.getHeaders());
 		if (null == response)
 		{
-			result_ = new Result(Result.Error.NETWORK, 0);
+			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
 			return;
 		}
 		else
@@ -754,14 +754,14 @@ public final class HTTPTask extends Task implements Runnable {
 			case HttpStatus.SC_PARTIAL_CONTENT:
 				break;
 			default:
-				result_ = new Result(Result.Error.HTTP, statusCode);
+				result_ = new ErrorResult(ErrorResult.Error.HTTP, statusCode);
 				return;
 			}
 		}
 		HttpEntity entity = response.getEntity();
 		if (null == entity)
 		{
-			result_ = new Result(Result.Error.OTHER, 0);
+			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
 			return;
 		}
 		FileOutputStream outputStream = null;
@@ -794,12 +794,12 @@ public final class HTTPTask extends Task implements Runnable {
 			}
 			if (0 <= contentLen && downloadLen != contentLen)
 			{
-				result_ = new Result(Result.Error.OTHER, 0);
+				result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
 				return;
 			}
 			if (!tempFile.renameTo(cacheFile))
 			{
-				result_ = new Result(Result.Error.OTHER, 0);
+				result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
 				return;
 			}
 			request_.handleResponse(cachePath);
@@ -807,17 +807,17 @@ public final class HTTPTask extends Task implements Runnable {
 		catch (IllegalStateException e)
 		{
 			// TODO Auto-generated catch block
-			result_ = new Result(Result.Error.OTHER, 0);
+			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
 		}
 		catch (FileNotFoundException e) 
 		{
 			// TODO: handle exception
-			result_ = new Result(Result.Error.OTHER, 0);
+			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
 		}
 		catch (IOException e)
 		{
 			// TODO Auto-generated catch block
-			result_ = new Result(Result.Error.NETWORK, 0);
+			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
 		}
 		finally
 		{

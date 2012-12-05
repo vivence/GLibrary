@@ -1,4 +1,4 @@
-package ghost.library.widget;
+package ghost.library.ui.widget;
 
 import android.content.Context;
 import android.graphics.Bitmap;

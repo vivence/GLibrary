@@ -118,7 +118,7 @@ public class HTTPSession {
 			HttpResponse response = httpClient_.execute(request_);
 			if (null != response)
 			{
-				Log.e(LOG_TAG, "http-get response: "+response.getStatusLine().getStatusCode());
+				Log.d(LOG_TAG, "http-get response: "+response.getStatusLine().getStatusCode());
 			}
 			return response;
 		} 
@@ -169,7 +169,7 @@ public class HTTPSession {
 			HttpResponse response = httpClient_.execute(request_);
 			if (null != response)
 			{
-				Log.e(LOG_TAG, "http-post response: "+response.getStatusLine().getStatusCode());
+				Log.d(LOG_TAG, "http-post response: "+response.getStatusLine().getStatusCode());
 			}
 			return response;
 		} 
