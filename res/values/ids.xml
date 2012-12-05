@@ -2,4 +2,7 @@
 <resources>
     <item type="id" name="full_screen"/>
     <item type="id" name="list"/>
+    <item type="id" name="progress"/>
+    <item type="id" name="text"/>
+    <item type="id" name="list_end"/>
 </resources>
