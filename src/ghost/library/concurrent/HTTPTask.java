@@ -93,7 +93,7 @@ public final class HTTPTask extends Task implements Runnable {
 				public HttpResponse fetch(HTTPSession session, Request request)
 				{
 					// TODO Auto-generated method stub
-					return session.post(request.getURLString(), request.getHeaders(), request.getEntityParams());
+					return session.post(request.getURLString(), request.getHeaders(), request.getParams());
 				}
 			},
 			POST_BYTES{
@@ -101,7 +101,7 @@ public final class HTTPTask extends Task implements Runnable {
 				public HttpResponse fetch(HTTPSession session, Request request)
 				{
 					// TODO Auto-generated method stub
-					return session.post(request.getURLString(), request.getHeaders(), request.getEntityParams());
+					return session.post(request.getURLString(), request.getHeaders(), request.getParams());
 				}
 			},
 			POST_PROGRESS_BYTES{
@@ -109,7 +109,7 @@ public final class HTTPTask extends Task implements Runnable {
 				public HttpResponse fetch(HTTPSession session, Request request)
 				{
 					// TODO Auto-generated method stub
-					return session.post(request.getURLString(), request.getHeaders(), request.getEntityParams());
+					return session.post(request.getURLString(), request.getHeaders(), request.getParams());
 				}
 			},
 			UPLOAD,
@@ -164,21 +164,32 @@ public final class HTTPTask extends Task implements Runnable {
 		public final String getURLString()
 		{
 			StringBuffer sb = new StringBuffer(getHost());
-			String params = buildParamsString(getURLParams());
-			if (!TextUtils.isEmpty(params))
+			switch (getMethod())
 			{
-				sb.append('?');
-				sb.append(params);
+			case GET_STRING:
+			case GET_BYTES:
+			case GET_PROGRESS_BYTES:
+				{
+					String params = buildParamsString(getParams());
+					if (!TextUtils.isEmpty(params))
+					{
+						sb.append('?');
+						sb.append(params);
+					}
+				}
+				break;
+			default:
+				break;
 			}
 			return sb.toString();
 		}
 		
-		protected String buildParamsString(List<Header> params)
+		protected String buildParamsString(List<NameValuePair> params)
 		{
 			if (null != params && !params.isEmpty())
 			{
 				StringBuffer sb = new StringBuffer();
-				for (Header param : params)
+				for (NameValuePair param : params)
 				{
 					if (0 < sb.length())
 					{
@@ -194,11 +205,7 @@ public final class HTTPTask extends Task implements Runnable {
 		}
 		
 		public abstract String getHost();
-		public List<Header> getURLParams()
-		{
-			return null;
-		}
-		public List<NameValuePair> getEntityParams()
+		public List<NameValuePair> getParams()
 		{
 			return null;
 		}
@@ -228,11 +235,6 @@ public final class HTTPTask extends Task implements Runnable {
 				headers.add(new BasicHeader("Range", sb.toString()));
 			}
 			return headers;
-		}
-		
-		public List<Header> getParams()
-		{
-			return null;
 		}
 		
 		public String getFilePath()

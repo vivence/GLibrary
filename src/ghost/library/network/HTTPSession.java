@@ -207,7 +207,7 @@ public class HTTPSession {
 	public OutputStream upload(
 			String urlString, 
 			List<Header> headers, 
-			List<Header> params,
+			List<NameValuePair> params,
 			File file)
 	{
 		Assert.assertTrue(!TextUtils.isEmpty(urlString) && null != file);
