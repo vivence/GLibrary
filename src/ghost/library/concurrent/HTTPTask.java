@@ -1,5 +1,8 @@
 package ghost.library.concurrent;
 
+import ghost.library.error.Error;
+import ghost.library.error.ExceptionError;
+import ghost.library.error.GenericError;
 import ghost.library.network.HTTPSession;
 import ghost.library.utility.FileUtils;
 import ghost.library.utility.Range;
@@ -66,7 +69,7 @@ public final class HTTPTask extends Task implements Runnable {
 		public static enum Method{
 			GET_STRING{
 				@Override
-				public HttpResponse fetch(HTTPSession session, Request request)
+				public HttpResponse fetch(HTTPSession session, Request request) throws ExceptionError
 				{
 					// TODO Auto-generated method stub
 					return session.get(request.getURLString(), request.getHeaders());
@@ -74,7 +77,7 @@ public final class HTTPTask extends Task implements Runnable {
 			},
 			GET_BYTES{
 				@Override
-				public HttpResponse fetch(HTTPSession session, Request request)
+				public HttpResponse fetch(HTTPSession session, Request request) throws ExceptionError
 				{
 					// TODO Auto-generated method stub
 					return session.get(request.getURLString(), request.getHeaders());
@@ -82,7 +85,7 @@ public final class HTTPTask extends Task implements Runnable {
 			},
 			GET_PROGRESS_BYTES{
 				@Override
-				public HttpResponse fetch(HTTPSession session, Request request)
+				public HttpResponse fetch(HTTPSession session, Request request) throws ExceptionError
 				{
 					// TODO Auto-generated method stub
 					return session.get(request.getURLString(), request.getHeaders());
@@ -90,7 +93,7 @@ public final class HTTPTask extends Task implements Runnable {
 			},
 			POST_STRING{
 				@Override
-				public HttpResponse fetch(HTTPSession session, Request request)
+				public HttpResponse fetch(HTTPSession session, Request request) throws ExceptionError
 				{
 					// TODO Auto-generated method stub
 					return session.post(request.getURLString(), request.getHeaders(), request.getParams());
@@ -98,7 +101,7 @@ public final class HTTPTask extends Task implements Runnable {
 			},
 			POST_BYTES{
 				@Override
-				public HttpResponse fetch(HTTPSession session, Request request)
+				public HttpResponse fetch(HTTPSession session, Request request) throws ExceptionError
 				{
 					// TODO Auto-generated method stub
 					return session.post(request.getURLString(), request.getHeaders(), request.getParams());
@@ -106,7 +109,7 @@ public final class HTTPTask extends Task implements Runnable {
 			},
 			POST_PROGRESS_BYTES{
 				@Override
-				public HttpResponse fetch(HTTPSession session, Request request)
+				public HttpResponse fetch(HTTPSession session, Request request) throws ExceptionError
 				{
 					// TODO Auto-generated method stub
 					return session.post(request.getURLString(), request.getHeaders(), request.getParams());
@@ -115,7 +118,7 @@ public final class HTTPTask extends Task implements Runnable {
 			UPLOAD,
 			DOWNLOAD;
 			
-			public HttpResponse fetch(HTTPSession session, Request request)
+			public HttpResponse fetch(HTTPSession session, Request request) throws ExceptionError
 			{
 				return null;
 			}
@@ -247,48 +250,44 @@ public final class HTTPTask extends Task implements Runnable {
 			return null;
 		}
 
-		public boolean handleResponse(String string)
+		public Error handleResponse(String string)
 		{
-			notifyResponseReceiver(string);
-			return true;
+			return null;
 		}
 		
-		public boolean handleResponse(byte[] bytes)
+		public Error handleResponse(byte[] bytes)
 		{
-			notifyResponseReceiver(bytes);
-			return true;
+			return null;
 		}
 		
-		public boolean handleResponse(HTTPSession session)
+		public Error handleResponse(HTTPSession session)
 		{
-			return true;
+			return null;
 		}
 		
 	}
 	
-	public static class ErrorResult{
-		public static enum Error{
-			NETWORK,
-			HTTP,
-			NO_ENTITY,
-			PARSE,
-			OTHER
-		}
-		public final Error error;
-		public final int code;
-		
-		public ErrorResult(Error error, int code)
-		{
-			// TODO Auto-generated constructor stub
-			this.error = error;
-			this.code = code;
-		}
-	}
+	public static final int ERROR_CODE_NULL_RESPONSE = 1;
+	public static final int ERROR_CODE_HTTP_STATUS_CODE = 2;
+	public static final int ERROR_CODE_NULL_ENTITY = 3;
+	public static final int ERROR_CODE_EMPTY_ENTITY = 4;
+	public static final int ERROR_CODE_READ = 5;
+	public static final int ERROR_CODE_ARGUMENTS = 6;
+	public static final int ERROR_CODE_NULL_OUTPUT_STREAM = 7;
+	public static final int ERROR_CODE_FILE_SIZE_NOT_EQUAL = 8;
+	public static final int ERROR_CODE_RENAME_FILE = 9;
+	
+	public static final Error E_NULL_RESPONSE = new GenericError(ERROR_CODE_NULL_RESPONSE, "null response");
+	public static final Error E_NULL_ENTITY = new GenericError(ERROR_CODE_NULL_ENTITY, "null entity");
+	public static final Error E_EMPTY_ENTITY = new GenericError(ERROR_CODE_EMPTY_ENTITY, "empty entity");
+	public static final Error E_READ = new GenericError(ERROR_CODE_EMPTY_ENTITY, "read error");
+	public static final Error E_NULL_OUTPUT_STREAM = new GenericError(ERROR_CODE_NULL_OUTPUT_STREAM, "null output stream");
+	public static final Error E_FILE_SIZE_NOT_EQUAL = new GenericError(ERROR_CODE_FILE_SIZE_NOT_EQUAL, "file size not equal");
+	public static final Error E_RENAME_FILE = new GenericError(ERROR_CODE_RENAME_FILE, "rename file error");
 	
 	public static final ThreadLocal<HTTPSession> TLS_HTTP_SESSION = new ThreadLocal<HTTPSession>();
 	
 	private Request request_;
-	private ErrorResult result_;
 	
 	public HTTPTask(Request request)
 	{
@@ -302,23 +301,6 @@ public final class HTTPTask extends Task implements Runnable {
 		Assert.assertNotNull(request);
 		request_ = request;
 		reset();
-	}
-	
-	@Override
-	public synchronized boolean reset()
-	{
-		// TODO Auto-generated method stub
-		if (super.reset())
-		{
-			result_ = null;
-			return true;
-		}
-		return false;
-	}
-	
-	public ErrorResult getErrorResult()
-	{
-		return result_;
 	}
 	
 	public HTTPSession getTLSHttpSession()
@@ -346,7 +328,7 @@ public final class HTTPTask extends Task implements Runnable {
 				String object = (String)FileUtils.objectFromFile(cachePath);
 				if (null != object)
 				{
-					if (request_.handleResponse(object))
+					if (null == request_.handleResponse(object))
 					{
 						return;
 					}
@@ -358,10 +340,21 @@ public final class HTTPTask extends Task implements Runnable {
 			}
 			new File(cachePath).delete();
 		}
-		HttpResponse response = method.fetch(session, request_);
+		HttpResponse response = null;
+		try
+		{
+			response = method.fetch(session, request_);
+		}
+		catch (ExceptionError e)
+		{
+			// TODO: handle exception
+			setError(e);
+			return;
+		}
+		
 		if (null == response)
 		{
-			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
+			setError(E_NULL_RESPONSE);
 			return;
 		}
 		else
@@ -372,14 +365,14 @@ public final class HTTPTask extends Task implements Runnable {
 			case HttpStatus.SC_OK:
 				break;
 			default:
-				result_ = new ErrorResult(ErrorResult.Error.HTTP, statusCode);
+				setError(new GenericError(ERROR_CODE_HTTP_STATUS_CODE, String.valueOf(statusCode)));
 				return;
 			}
 		}
 		HttpEntity entity = response.getEntity();
 		if (null == entity)
 		{
-			result_ = new ErrorResult(ErrorResult.Error.NO_ENTITY, 0);
+			setError(E_NULL_ENTITY);
 			return;
 		}
 		try
@@ -387,24 +380,24 @@ public final class HTTPTask extends Task implements Runnable {
 			String object = EntityUtils.toString(entity, StringUtils.CHAR_SET_UTF_8);
 			if (TextUtils.isEmpty(object))
 			{
-				result_ = new ErrorResult(ErrorResult.Error.NO_ENTITY, 0);
+				setError(E_EMPTY_ENTITY);
 				return;
 			}
 			if (!TextUtils.isEmpty(cachePath))
 			{
 				FileUtils.objectToFile(cachePath, object);
 			}
-			request_.handleResponse(object);
+			setError(request_.handleResponse(object));
 		}
 		catch (ParseException e)
 		{
 			// TODO Auto-generated catch block
-			result_ = new ErrorResult(ErrorResult.Error.PARSE, 0);
+			setError(new ExceptionError(e));
 		}
 		catch (IOException e)
 		{
 			// TODO Auto-generated catch block
-			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
+			setError(new ExceptionError(e));
 		}
 	}
 	
@@ -420,17 +413,27 @@ public final class HTTPTask extends Task implements Runnable {
 			byte[] bytes = FileUtils.bytesFromFile(cachePath);
 			if (null != bytes)
 			{
-				if (request_.handleResponse(bytes))
+				if (null == request_.handleResponse(bytes))
 				{
 					return;
 				}
 				new File(cachePath).delete();
 			}
 		}
-		HttpResponse response = method.fetch(session, request_);
+		HttpResponse response = null;
+		try
+		{
+			response = method.fetch(session, request_);
+		}
+		catch (ExceptionError e)
+		{
+			// TODO Auto-generated catch block
+			setError(e);
+			return;
+		}
 		if (null == response)
 		{
-			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
+			setError(E_NULL_RESPONSE);
 			return;
 		}
 		else
@@ -441,14 +444,14 @@ public final class HTTPTask extends Task implements Runnable {
 			case HttpStatus.SC_OK:
 				break;
 			default:
-				result_ = new ErrorResult(ErrorResult.Error.HTTP, statusCode);
+				setError(new GenericError(ERROR_CODE_HTTP_STATUS_CODE, String.valueOf(statusCode)));
 				return;
 			}
 		}
 		HttpEntity entity = response.getEntity();
 		if (null == entity)
 		{
-			result_ = new ErrorResult(ErrorResult.Error.NO_ENTITY, 0);
+			setError(E_NULL_ENTITY);
 			return;
 		}
 		try
@@ -456,19 +459,19 @@ public final class HTTPTask extends Task implements Runnable {
 			byte[] bytes = EntityUtils.toByteArray(entity);
 			if (null == bytes)
 			{
-				result_ = new ErrorResult(ErrorResult.Error.NO_ENTITY, 0);
+				setError(E_EMPTY_ENTITY);
 				return;
 			}
 			if (!TextUtils.isEmpty(cachePath))
 			{
 				FileUtils.bytesToFile(cachePath, bytes);
 			}
-			request_.handleResponse(bytes);
+			setError(request_.handleResponse(bytes));
 		}
 		catch (IOException e)
 		{
 			// TODO Auto-generated catch block
-			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
+			setError(new ExceptionError(e));
 		}
 	}
 	
@@ -484,7 +487,7 @@ public final class HTTPTask extends Task implements Runnable {
 			byte[] bytes = FileUtils.bytesFromFile(cachePath);
 			if (null != bytes)
 			{
-				if (request_.handleResponse(bytes))
+				if (null == request_.handleResponse(bytes))
 				{
 					return;
 				}
@@ -492,10 +495,20 @@ public final class HTTPTask extends Task implements Runnable {
 			}
 		}
 		setProgress(0, -1);
-		HttpResponse response = method.fetch(session, request_);
+		HttpResponse response = null;
+		try
+		{
+			response = method.fetch(session, request_);
+		}
+		catch (ExceptionError e)
+		{
+			// TODO: handle exception
+			setError(e);
+			return;
+		}
 		if (null == response)
 		{
-			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
+			setError(E_NULL_RESPONSE);
 			return;
 		}
 		else
@@ -506,14 +519,14 @@ public final class HTTPTask extends Task implements Runnable {
 			case HttpStatus.SC_OK:
 				break;
 			default:
-				result_ = new ErrorResult(ErrorResult.Error.HTTP, statusCode);
+				setError(new GenericError(ERROR_CODE_HTTP_STATUS_CODE, String.valueOf(statusCode)));
 				return;
 			}
 		}
 		HttpEntity entity = response.getEntity();
 		if (null == entity)
 		{
-			result_ = new ErrorResult(ErrorResult.Error.NO_ENTITY, 0);
+			setError(E_NULL_ENTITY);
 			return;
 		}
 		try
@@ -545,7 +558,7 @@ public final class HTTPTask extends Task implements Runnable {
 				{
 					FileUtils.bytesToFile(cachePath, bytes);
 				}
-				request_.handleResponse(bytes);
+				setError(request_.handleResponse(bytes));
 			}
 			else
 			{
@@ -562,7 +575,7 @@ public final class HTTPTask extends Task implements Runnable {
 					}
 					if (-1 == readLen)
 					{
-						result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
+						setError(E_READ);
 						return;
 					}
 					offset += readLen;
@@ -573,18 +586,18 @@ public final class HTTPTask extends Task implements Runnable {
 				{
 					FileUtils.bytesToFile(cachePath, buffer);
 				}
-				request_.handleResponse(buffer);
+				setError(request_.handleResponse(buffer));
 			}
 		}
 		catch (IllegalStateException e)
 		{
 			// TODO Auto-generated catch block
-			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
+			setError(new ExceptionError(e));
 		}
 		catch (IOException e)
 		{
 			// TODO Auto-generated catch block
-			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
+			setError(new ExceptionError(e));
 		}
 	}
 	
@@ -593,30 +606,41 @@ public final class HTTPTask extends Task implements Runnable {
 		String filePath = request_.getFilePath();
 		if (TextUtils.isEmpty(filePath))
 		{
-			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
+			setError(new GenericError(ERROR_CODE_ARGUMENTS, "upload without file path"));
 			return;
 		}
 		File file = new File(filePath);
 		if (!file.exists())
 		{
-			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
+			setError(new GenericError(ERROR_CODE_ARGUMENTS, "upload file isn't exist"));
 			return;
 		}
 		int contentLen = (int)file.length();
 		if (0 >= contentLen)
 		{
-			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
+			setError(new GenericError(ERROR_CODE_ARGUMENTS, "upload file size is 0"));
 			return;
 		}
 		setProgress(0, contentLen);
-		OutputStream outputStream = session.upload(
-				request_.getURLString(), 
-				request_.getHeaders(),
-				request_.getParams(),
-				file);
+		OutputStream outputStream = null;
+		try
+		{
+			outputStream = session.upload(
+					request_.getURLString(), 
+					request_.getHeaders(),
+					request_.getParams(),
+					file);
+		}
+		catch (ExceptionError e)
+		{
+			// TODO: handle exception
+			setError(e);
+			return;
+		}
+		
 		if (null == outputStream)
 		{
-			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
+			setError(E_NULL_OUTPUT_STREAM);
 			return;
 		}
 		FileInputStream fileInputStream = null;
@@ -636,7 +660,7 @@ public final class HTTPTask extends Task implements Runnable {
 				}
 				if (-1 == readLen)
 				{
-					result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
+					setError(E_READ);
 					return;
 				}
 				outputStream.write(buffer, 0, readLen);
@@ -655,21 +679,26 @@ public final class HTTPTask extends Task implements Runnable {
 			session.endUpload(outputStream);
 			outputStream.close();
 			outputStream = null;
-			request_.handleResponse(session);
+			setError(request_.handleResponse(session));
 		}
 		catch (IllegalStateException e)
 		{
 			// TODO: handle exception
-			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
+			setError(new ExceptionError(e));
 		}
 		catch (FileNotFoundException e)
 		{
-			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
+			setError(new ExceptionError(e));
 		}
 		catch (IOException e) 
 		{
 			// TODO: handle exception
-			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
+			setError(new ExceptionError(e));
+		}
+		catch (ExceptionError e)
+		{
+			// TODO Auto-generated catch block
+			setError(e);
 		}
 		finally
 		{
@@ -707,13 +736,13 @@ public final class HTTPTask extends Task implements Runnable {
 		String cachePath = request_.getFilePath();
 		if (TextUtils.isEmpty(cachePath))
 		{
-			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
+			setError(new GenericError(ERROR_CODE_ARGUMENTS, "download without file path"));
 			return;
 		}
 		File cacheFile = new File(cachePath);
 		if (cacheFile.exists())
 		{
-			if (request_.handleResponse(cachePath))
+			if (null == request_.handleResponse(cachePath))
 			{
 				return;
 			}
@@ -725,7 +754,7 @@ public final class HTTPTask extends Task implements Runnable {
 			File cacheFile2 = new File(cachePath2);
 			if (cacheFile2.exists())
 			{
-				if (request_.handleResponse(cachePath2))
+				if (null == request_.handleResponse(cachePath2))
 				{
 					return;
 				}
@@ -741,10 +770,21 @@ public final class HTTPTask extends Task implements Runnable {
 			request_.setRangeBegin(downloadLen);
 		}
 		setProgress(0, -1);
-		HttpResponse response = session.get(request_.getURLString(), request_.getHeaders());
+		HttpResponse response = null;
+		try
+		{
+			response = session.get(request_.getURLString(), request_.getHeaders());
+		}
+		catch (ExceptionError e)
+		{
+			// TODO: handle exception
+			setError(e);
+			return;
+		}
+		
 		if (null == response)
 		{
-			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
+			setError(E_NULL_RESPONSE);
 			return;
 		}
 		else
@@ -756,14 +796,14 @@ public final class HTTPTask extends Task implements Runnable {
 			case HttpStatus.SC_PARTIAL_CONTENT:
 				break;
 			default:
-				result_ = new ErrorResult(ErrorResult.Error.HTTP, statusCode);
+				setError(new GenericError(ERROR_CODE_HTTP_STATUS_CODE, String.valueOf(statusCode)));
 				return;
 			}
 		}
 		HttpEntity entity = response.getEntity();
 		if (null == entity)
 		{
-			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
+			setError(E_NULL_ENTITY);
 			return;
 		}
 		FileOutputStream outputStream = null;
@@ -796,30 +836,30 @@ public final class HTTPTask extends Task implements Runnable {
 			}
 			if (0 <= contentLen && downloadLen != contentLen)
 			{
-				result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
+				setError(E_FILE_SIZE_NOT_EQUAL);
 				return;
 			}
 			if (!tempFile.renameTo(cacheFile))
 			{
-				result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
+				setError(E_RENAME_FILE);
 				return;
 			}
-			request_.handleResponse(cachePath);
+			setError(request_.handleResponse(cachePath));
 		}
 		catch (IllegalStateException e)
 		{
 			// TODO Auto-generated catch block
-			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
+			setError(new ExceptionError(e));
 		}
 		catch (FileNotFoundException e) 
 		{
 			// TODO: handle exception
-			result_ = new ErrorResult(ErrorResult.Error.OTHER, 0);
+			setError(new ExceptionError(e));
 		}
 		catch (IOException e)
 		{
 			// TODO Auto-generated catch block
-			result_ = new ErrorResult(ErrorResult.Error.NETWORK, 0);
+			setError(new ExceptionError(e));
 		}
 		finally
 		{

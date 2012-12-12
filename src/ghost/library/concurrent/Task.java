@@ -1,5 +1,6 @@
 package ghost.library.concurrent;
 
+import ghost.library.error.Error;
 import ghost.library.utility.IObserverTarget;
 import ghost.library.utility.ObserverTargetImpl;
 
@@ -85,6 +86,8 @@ public class Task implements IObserverTarget {
 	private boolean canceled_ = false;
 	private boolean aborted_ = false;
 	private long lastKeepAliveTime_;
+	
+	private Error error_;
 	
 	private ObserverTargetImpl observerTargetImpl_;
 
@@ -223,6 +226,16 @@ public class Task implements IObserverTarget {
 		lastKeepAliveTime_ = System.currentTimeMillis();
 	}
 	
+	public synchronized Error getError()
+	{
+		return error_;
+	}
+	
+	protected synchronized void setError(Error error)
+	{
+		error_ = error;
+	}
+	
 	public synchronized boolean reset()
 	{
 		if (State.NONE == state_)
@@ -233,6 +246,7 @@ public class Task implements IObserverTarget {
 		{
 			canceled_ = false;
 			aborted_ = false;
+			error_ = null;
 			return true;
 		}
 		return false;

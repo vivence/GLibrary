@@ -1,5 +1,6 @@
 package ghost.library.network;
 
+import ghost.library.error.ExceptionError;
 import ghost.library.utility.Log;
 import ghost.library.utility.StringUtils;
 
@@ -96,7 +97,7 @@ public class HTTPSession {
 		}
 	}
 
-	public HttpResponse get(String urlString, List<Header> headers)
+	public HttpResponse get(String urlString, List<Header> headers) throws ExceptionError
 	{
 		Assert.assertTrue(!TextUtils.isEmpty(urlString));
 		Log.i(LOG_TAG, "http-get: "+urlString);
@@ -125,25 +126,25 @@ public class HTTPSession {
 		catch (IllegalArgumentException e) 
 		{
 			// TODO: handle exception
-			e.printStackTrace();
+			throw new ExceptionError(e);
 		} 
 		catch (ClientProtocolException e) 
 		{
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new ExceptionError(e);
 		}
 		catch (UnsupportedEncodingException e)
 		{
-			e.printStackTrace();
+			throw new ExceptionError(e);
 		}
 		catch (IOException e) 
 		{
 			// TODO: handle exception
+			throw new ExceptionError(e);
 		}
-		return null;
 	}
 	
-	public HttpResponse post(String urlString, List<Header> headers, List<NameValuePair> params)
+	public HttpResponse post(String urlString, List<Header> headers, List<NameValuePair> params) throws ExceptionError
 	{
 		Assert.assertTrue(!TextUtils.isEmpty(urlString));
 		Log.i(LOG_TAG, "http-post: "+urlString);
@@ -176,22 +177,22 @@ public class HTTPSession {
 		catch (IllegalArgumentException e) 
 		{
 			// TODO: handle exception
-			e.printStackTrace();
+			throw new ExceptionError(e);
 		} 
 		catch (ClientProtocolException e) 
 		{
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new ExceptionError(e);
 		}
 		catch (UnsupportedEncodingException e)
 		{
-			e.printStackTrace();
+			throw new ExceptionError(e);
 		}
 		catch (IOException e) 
 		{
 			// TODO: handle exception
+			throw new ExceptionError(e);
 		}
-		return null;
 	}
 	
 	private static <T> void appendParam(StringBuffer sb, String paramName, T paramValue) {
@@ -208,7 +209,7 @@ public class HTTPSession {
 			String urlString, 
 			List<Header> headers, 
 			List<NameValuePair> params,
-			File file)
+			File file) throws ExceptionError
 	{
 		Assert.assertTrue(!TextUtils.isEmpty(urlString) && null != file);
 		Log.i(LOG_TAG, "http-post: "+urlString);
@@ -222,6 +223,7 @@ public class HTTPSession {
 		headers.add(new BasicHeader("connection", "keep-Alive"));
 		headers.add(new BasicHeader("Accept-Encoding", "identity,deflate,gzip"));
 		headers.add(new BasicHeader("Content-Type", CONTENT_TYPE));
+		boolean succeed = false;
 		try 
 		{
 			if (null != connection_)
@@ -286,35 +288,42 @@ public class HTTPSession {
 				connection_.setFixedLengthStreamingMode((int)fixLength);
 				outputStream.write(paramsData);
 			}
+			succeed = true;
 			return outputStream;
 		} 
 		catch (ClassCastException e) 
 		{
-			e.printStackTrace();
+			throw new ExceptionError(e);
 		} 
 		catch (MalformedURLException e) 
 		{
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new ExceptionError(e);
 		}
 		catch (UnsupportedEncodingException e) 
 		{
 			// TODO: handle exception
-			e.printStackTrace();
+			throw new ExceptionError(e);
 		}
 		catch (IOException e) 
 		{
 			// TODO: handle exception
+			throw new ExceptionError(e);
 		}
-		if (null != connection_)
+		finally
 		{
-			connection_.disconnect();
-			connection_ = null;
+			if (!succeed)
+			{
+				if (null != connection_)
+				{
+					connection_.disconnect();
+					connection_ = null;
+				}
+			}
 		}
-		return null;
 	}
 
-	public boolean endUpload(OutputStream outputStream) 
+	public boolean endUpload(OutputStream outputStream)  throws ExceptionError
 	{
 		try
 		{
@@ -325,9 +334,8 @@ public class HTTPSession {
 		catch (IOException e)
 		{
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new ExceptionError(e);
 		}
-		return false;
 	}
 	
 	public void closeUpload()
