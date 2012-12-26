@@ -4,6 +4,7 @@ import ghost.library.concurrent.Task;
 import ghost.library.concurrent.Task.State;
 import ghost.library.data.IList;
 import ghost.library.ui.ObserverHelper;
+import ghost.library.utility.IObserverTarget;
 import ghost.library.utility.ViewUtils;
 import junit.framework.Assert;
 import android.content.Context;
@@ -54,6 +55,10 @@ public abstract class ListController extends ObserverHelper implements IListCont
 		dataList_ = dataList;
 		adapter_ = createAdapter(dataList);
 		listView_.setAdapter(adapter_);
+		if (null != dataList_ && dataList_ instanceof IObserverTarget)
+		{
+			((IObserverTarget)dataList_).addObserver(this);
+		}
 	}
 	
 	public IList getDataList()
@@ -180,6 +185,23 @@ public abstract class ListController extends ObserverHelper implements IListCont
 			return false;
 		}
 		return dataList_.hasMore();
+	}
+	
+	@Override
+	public boolean isEmpty()
+	{
+		// TODO Auto-generated method stub
+		return null == dataList_ || dataList_.isEmpty();
+	}
+	
+	@Override
+	public void clear()
+	{
+		// TODO Auto-generated method stub
+		if (null != dataList_)
+		{
+			dataList_.clear();
+		}
 	}
 
 	@Override

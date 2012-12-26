@@ -1,5 +1,6 @@
 package ghost.library.concurrent;
 
+import ghost.library.concurrent.HTTPTask.Request.Method;
 import ghost.library.error.Error;
 import ghost.library.error.ExceptionError;
 import ghost.library.error.GenericError;
@@ -276,6 +277,7 @@ public final class HTTPTask extends Task implements Runnable {
 	public static final int ERROR_CODE_NULL_OUTPUT_STREAM = 7;
 	public static final int ERROR_CODE_FILE_SIZE_NOT_EQUAL = 8;
 	public static final int ERROR_CODE_RENAME_FILE = 9;
+	public static final int ERROR_CODE_CUSTOM = 100;
 	
 	public static final Error E_NULL_RESPONSE = new GenericError(ERROR_CODE_NULL_RESPONSE, "null response");
 	public static final Error E_NULL_ENTITY = new GenericError(ERROR_CODE_NULL_ENTITY, "null entity");
@@ -303,12 +305,17 @@ public final class HTTPTask extends Task implements Runnable {
 		reset();
 	}
 	
+	protected HTTPSession createHTTPSession()
+	{
+		return new HTTPSession();
+	}
+	
 	public HTTPSession getTLSHttpSession()
 	{
 		HTTPSession httpSession = TLS_HTTP_SESSION.get();
 		if (null == httpSession)
 		{
-			httpSession = new HTTPSession();
+			httpSession = createHTTPSession();
 			TLS_HTTP_SESSION.set(httpSession);
 		}
 		return httpSession;
@@ -731,7 +738,7 @@ public final class HTTPTask extends Task implements Runnable {
 		}
 	}
 	
-	private void download(HTTPSession session) throws InterruptedException
+	private void download(HTTPSession session, Method method) throws InterruptedException
 	{
 		String cachePath = request_.getFilePath();
 		if (TextUtils.isEmpty(cachePath))
@@ -773,7 +780,7 @@ public final class HTTPTask extends Task implements Runnable {
 		HttpResponse response = null;
 		try
 		{
-			response = session.get(request_.getURLString(), request_.getHeaders());
+			response = method.fetch(session, request_);
 		}
 		catch (ExceptionError e)
 		{
@@ -915,7 +922,7 @@ public final class HTTPTask extends Task implements Runnable {
 					upload(httpSession);
 					break;
 				case DOWNLOAD:
-					download(httpSession);
+					download(httpSession, request_.getMethod());
 					break;
 				default:
 					break;

@@ -17,6 +17,6 @@ public interface IObserverTarget {
 	
 	public void addObserver(IObserver observer);
 	public void removeObserver(IObserver observer);
-	public void clearObserver();
+	public void clearObservers();
 	public void notifyObservers(Class<? extends IObserver> observerInterface, String methodName, NotifyMethodParam... parameters);
 }

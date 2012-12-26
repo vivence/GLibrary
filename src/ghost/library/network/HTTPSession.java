@@ -20,7 +20,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -66,7 +66,7 @@ public class HTTPSession {
 		UPLOAD_END_DATA = uploadEndData;
 	}
 
-	private HttpClient httpClient_;
+	private DefaultHttpClient httpClient_;
 	private HttpUriRequest request_;
 	private HttpURLConnection connection_;
 	
@@ -81,6 +81,16 @@ public class HTTPSession {
 		 schemeRegistry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
 		 httpClient_ = new DefaultHttpClient(
 				 new ThreadSafeClientConnManager(httpParams, schemeRegistry), httpParams);
+	}
+	
+	public CookieStore getCookieStore()
+	{
+		return httpClient_.getCookieStore();
+	}
+	
+	public void setCookieStore(CookieStore cookieStore)
+	{
+		httpClient_.setCookieStore(cookieStore);
 	}
 	
 	public void abort()
@@ -247,45 +257,44 @@ public class HTTPSession {
 							header.getValue());
 				}
 			}
-
+			byte[] paramsData = null;
+			if (null != params)
+			{
+				StringBuffer sb = new StringBuffer();
+				for (NameValuePair param : params) 
+				{
+					appendParam(sb, param.getName(), param.getValue());
+				}
+				
+				sb.append("--" + BOUNDARY);
+				sb.append(LINEND);
+				sb.append("Content-Disposition: form-data; name=\"file\"; filename=\"");
+				sb.append(file.getPath());
+				sb.append("\"" + LINEND);
+				sb.append("Content-Type: application/octet-stream" + LINEND);
+				sb.append(LINEND);
+				
+				String paramsString = sb.toString();
+				try
+				{
+					paramsData = paramsString.getBytes(StringUtils.CHAR_SET_UTF_8);
+				}
+				catch (UnsupportedEncodingException e)
+				{
+					// TODO Auto-generated catch block
+					paramsData = paramsString.getBytes();
+				}
+			}
+			long fixLength = file.length()+UPLOAD_END_DATA.length;
+			if (null != paramsData)
+			{
+				fixLength += paramsData.length;
+			}
+			connection_.setFixedLengthStreamingMode((int)fixLength);
 			connection_.connect();
 			OutputStream outputStream = connection_.getOutputStream();
 			if (null != outputStream)
 			{
-				byte[] paramsData = null;
-				if (null != params)
-				{
-					StringBuffer sb = new StringBuffer();
-					for (Header header : headers) 
-					{
-						appendParam(sb, header.getName(), header.getValue());
-					}
-					
-					sb.append("--" + BOUNDARY);
-					sb.append(LINEND);
-					sb.append("Content-Disposition: form-data; name=\"file\"; filename=\"");
-					sb.append(file.getPath());
-					sb.append("\"" + LINEND);
-					sb.append("Content-Type: application/octet-stream" + LINEND);
-					sb.append(LINEND);
-					
-					String paramsString = sb.toString();
-					try
-					{
-						paramsData = paramsString.getBytes(StringUtils.CHAR_SET_UTF_8);
-					}
-					catch (UnsupportedEncodingException e)
-					{
-						// TODO Auto-generated catch block
-						paramsData = paramsString.getBytes();
-					}
-				}
-				long fixLength = file.length()+UPLOAD_END_DATA.length;
-				if (null != paramsData)
-				{
-					fixLength += paramsData.length;
-				}
-				connection_.setFixedLengthStreamingMode((int)fixLength);
 				outputStream.write(paramsData);
 			}
 			succeed = true;

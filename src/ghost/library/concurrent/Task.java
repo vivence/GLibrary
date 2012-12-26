@@ -274,12 +274,12 @@ public class Task implements IObserverTarget {
 	}
 
 	@Override
-	public synchronized void clearObserver()
+	public synchronized void clearObservers()
 	{
 		// TODO Auto-generated method stub
 		if (null != observerTargetImpl_)
 		{
-			observerTargetImpl_.clearObserver();
+			observerTargetImpl_.clearObservers();
 		}
 	}
 	

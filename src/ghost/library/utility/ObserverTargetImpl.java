@@ -121,7 +121,7 @@ public class ObserverTargetImpl implements IObserverTarget {
 	}
 	
 	@Override
-	public void clearObserver()
+	public void clearObservers()
 	{
 		// TODO Auto-generated method stub
 		if (null != observers_)

@@ -4,7 +4,7 @@ import ghost.library.utility.IObserverManager;
 import ghost.library.utility.ObserverImpl;
 import android.content.Context;
 
-public class ObserverHelper extends ObserverImpl {
+public abstract class ObserverHelper extends ObserverImpl {
 	
 	@Override
 	protected final IObserverManager getManager()
@@ -23,12 +23,6 @@ public class ObserverHelper extends ObserverImpl {
 		return null;
 	}
 	
-	protected Context getAttachedContext()
-	{
-		return null;
-	}
-	protected android.support.v4.app.Fragment getAttachedFragment()
-	{
-		return null;
-	}
+	protected abstract Context getAttachedContext();
+	protected abstract android.support.v4.app.Fragment getAttachedFragment();
 }

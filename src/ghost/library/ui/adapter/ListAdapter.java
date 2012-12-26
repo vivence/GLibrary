@@ -117,6 +117,11 @@ public abstract class ListAdapter<T> extends BaseAdapter {
         	Collections.sort(list_, comparator);
 		}
     }
+    
+    public boolean isEmpty()
+    {
+    	return null == list_ || list_.isEmpty();
+    }
 
 	@Override
 	public int getCount()

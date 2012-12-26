@@ -129,12 +129,12 @@ public class NetworkStatusReceiver extends BroadcastReceiver implements IObserve
 	}
 	
 	@Override
-	public final void clearObserver()
+	public final void clearObservers()
 	{
 		// TODO Auto-generated method stub
 		if (null != observerTargetImpl_)
 		{
-			observerTargetImpl_.clearObserver();
+			observerTargetImpl_.clearObservers();
 		}
 	}
 	
