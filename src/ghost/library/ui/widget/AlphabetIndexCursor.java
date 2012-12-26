@@ -1,0 +1,303 @@
+package ghost.library.ui.widget;
+
+import junit.framework.Assert;
+import android.content.ContentResolver;
+import android.database.CharArrayBuffer;
+import android.database.ContentObserver;
+import android.database.Cursor;
+import android.database.DataSetObserver;
+import android.net.Uri;
+import android.os.Bundle;
+
+public class AlphabetIndexCursor implements Cursor {
+
+	private AlphabetIndexer indexer_;
+	private int position_ = 0;
+
+	public AlphabetIndexCursor(AlphabetIndexer adapter)
+	{
+		// TODO Auto-generated constructor stub
+		Assert.assertNotNull(adapter);
+		indexer_ = adapter;
+	}
+
+	@Override
+	public int getCount() 
+	{
+		// TODO Auto-generated method stub
+		return indexer_.getItemCount();
+	}
+
+	@Override
+	public int getPosition() 
+	{
+		// TODO Auto-generated method stub
+		return position_;
+	}
+
+	@Override
+	public boolean move(int offset) 
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean moveToPosition(int position) 
+	{
+		// TODO Auto-generated method stub
+		if (0 <= position && getCount() > position) 
+		{
+			position_ = position;
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean moveToFirst() 
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean moveToLast() 
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean moveToNext() 
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean moveToPrevious() 
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isFirst() 
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isLast() 
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isBeforeFirst() 
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isAfterLast() 
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int getColumnIndex(String columnName)
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getColumnIndexOrThrow(String columnName) throws IllegalArgumentException 
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public String getColumnName(int columnIndex) 
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String[] getColumnNames() 
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getColumnCount() 
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public byte[] getBlob(int columnIndex) 
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getString(int columnIndex) 
+	{
+		// TODO Auto-generated method stub
+		return indexer_.getIndexName(position_);
+	}
+
+	@Override
+	public void copyStringToBuffer(int columnIndex, CharArrayBuffer buffer) 
+	{
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public short getShort(int columnIndex) 
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getInt(int columnIndex) 
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public long getLong(int columnIndex) 
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public float getFloat(int columnIndex) 
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double getDouble(int columnIndex) 
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getType(int columnIndex) 
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public boolean isNull(int columnIndex) 
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void deactivate() 
+	{
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	@Deprecated
+	public boolean requery() 
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void close() 
+	{
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public boolean isClosed() 
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void registerContentObserver(ContentObserver observer) 
+	{
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void unregisterContentObserver(ContentObserver observer) 
+	{
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void registerDataSetObserver(DataSetObserver observer) 
+	{
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void unregisterDataSetObserver(DataSetObserver observer) 
+	{
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void setNotificationUri(ContentResolver cr, Uri uri) 
+	{
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public boolean getWantsAllOnMoveCalls() 
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Bundle getExtras() 
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Bundle respond(Bundle extras) 
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <declare-styleable name="TextView">
+        <attr name="text" format="string|reference"></attr>
+        <attr name="text_size" format="dimension"></attr>
+        <attr name="text_color" format="color"></attr>
+        <attr name="shadow_radius" format="float"></attr>
+        <attr name="shadow_dx" format="float"></attr>
+        <attr name="shadow_dy" format="float"></attr>
+        <attr name="shadow_color" format="color"></attr>
+    </declare-styleable>
+    
+</resources>

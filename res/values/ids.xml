@@ -5,4 +5,5 @@
     <item type="id" name="progress"/>
     <item type="id" name="text"/>
     <item type="id" name="list_end"/>
+    <item type="id" name="tag_key_section_state"></item>
 </resources>
